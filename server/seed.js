@@ -7,6 +7,7 @@ import { Product, User } from "./models.js";
 
 export async function seedDatabase() {
   //test
+  //test
   if (!await User.exists({ username: "fpo" })) {
     await User.create({
       name: "FPO Officer",
