@@ -15,8 +15,40 @@ import {
   View,
 } from 'react-native';
 
-const API_BASE = 'http://127.0.0.1:5000/api';
+const resolveApiBase = () => {
+  const envBase = typeof process !== 'undefined' && process.env
+    ? (process.env.EXPO_PUBLIC_API_BASE || process.env.REACT_APP_API_BASE || process.env.API_BASE)
+    : null;
+
+  if (envBase) {
+    const base = String(envBase).replace(/\/+$/, '');
+    return base.endsWith('/api') ? base : `${base}/api`;
+  }
+
+  if (typeof window !== 'undefined' && window.location) {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://127.0.0.1:5000/api';
+    }
+    return `${window.location.origin.replace(/\/+$/, '')}/api`;
+  }
+
+  return 'http://127.0.0.1:5000/api';
+};
+
+const API_BASE = resolveApiBase();
 const STORAGE_KEY = 'freshfarm-mobile-token';
+
+function apiUrl(path) {
+  const normalized = String(path || '').replace(/^\/+/, '');
+  return `${API_BASE.replace(/\/+$/, '')}/${normalized}`;
+}
+
+function assetUrl(path) {
+  const normalized = String(path || '').replace(/^\/+/, '');
+  const base = API_BASE.replace(/\/api$/, '');
+  return `${base}/${normalized}`;
+}
 
 async function getStoredToken() {
   try {
@@ -50,7 +82,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   async function request(path, options = {}, authToken = token) {
-    const response = await fetch(`${API_BASE}${path}`, {
+    const response = await fetch(apiUrl(path), {
       ...options,
       headers: {
         Accept: 'application/json',
@@ -609,7 +641,7 @@ function CustomerPortal({ products, checkout, setCheckout, placeOrder, placeCart
         const quantity = Number(qtyMap[product._id] || 1);
         return (
           <View key={product._id || product.name} style={styles.productCard}>
-            <Image source={{ uri: product.photoUrl ? `http://127.0.0.1:5000${product.photoUrl}` : 'https://images.unsplash.com/...'} } style={styles.productImage} />
+            <Image source={{ uri: product.photoUrl ? assetUrl(product.photoUrl) : 'https://images.unsplash.com/...'} } style={styles.productImage} />
             <View style={styles.productMeta}>
               <Text style={styles.productName}>{product.name}</Text>
               <Text style={styles.bodyText}>{product.farmer?.name || 'Verified farmer'} · {product.qty} {product.unit} available</Text>
