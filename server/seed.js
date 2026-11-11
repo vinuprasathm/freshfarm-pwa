@@ -6,6 +6,7 @@ import { connectDatabase, closeDatabase } from "./db.js";
 import { Product, User } from "./models.js";
 
 export async function seedDatabase() {
+  //test
   if (!await User.exists({ username: "fpo" })) {
     await User.create({
       name: "FPO Officer",
