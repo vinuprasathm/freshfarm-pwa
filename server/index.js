@@ -15,14 +15,25 @@ import { seedDatabase } from "./seed.js";
 process.env.NODE_ENV ||= "development";
 const app = express();
 const port = Number(process.env.PORT) || 5000;
-const isAllowedLocalOrigin = (origin) => {
+const EXPLICIT_ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
   if (!origin) return false;
-  return /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin);
+  const allowed = [
+    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/,
+    /^https:\/\/.*\.netlify\.app$/,
+    /^https:\/\/.*\.onrender\.com$/,
+    ...EXPLICIT_ALLOWED_ORIGINS.map((entry) => new RegExp(`^${entry.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+  ];
+  return allowed.some((pattern) => pattern.test(origin));
 };
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin && isAllowedLocalOrigin(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   } else if (!origin) {
     res.setHeader("Access-Control-Allow-Origin", "*");
