@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "FreshFarm",
+    "slug": "freshfarm-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#f2f5ee"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.freshfarm.mobile"
+    }
+  }
+}
